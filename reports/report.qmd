@@ -92,7 +92,7 @@ List all non-countries.
 
 run_sql_and_return_html(cnx,"""
 SELECT
-  `Long Name`, `Region` 
+  `Long Name`
 FROM
   world_bank_data.wdi_country
 WHERE 
@@ -244,7 +244,7 @@ SELECT
 FROM
   wdi_country
 WHERE
-  `Country Code` = 'QA'
+  `Country Code` = 'QAT'
 
 """)
 
@@ -260,11 +260,11 @@ WHERE
 
 run_sql_and_return_html(cnx,"""
 SELECT
-  `Country Code`, `Short Name`, `Country Abbr`, `WB-2 code`, `Region`
+  `Country Code`, `Short Name`, `2-alpha code`, `WB-2 code`, `Region`
 FROM
   wdi_country
 WHERE
-  `Country Abbr` != `WB-2 code`
+  `2-alpha code` != `WB-2 code`
 
 """)
 
@@ -278,7 +278,7 @@ WHERE
 ## income category in descending order of most countries to least.
 ## (skills: select, aggregate, group by, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 SELECT
   `Income Group`, count(*) as "Number of Countries"
 FROM
@@ -303,7 +303,7 @@ ORDER BY
 
 run_sql_and_return_html(cnx,"""
 SELECT
-  `Short Name`, `Income Group`
+  `Short Name`, `Income Group`, `Region`
 FROM
   wdi_country
 WHERE
@@ -336,7 +336,7 @@ WHERE
 ```{python}
 ## Now, display the country again to verify the change stuck!
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 SELECT
   `Short Name`, `Income Group`
 FROM
