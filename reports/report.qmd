@@ -361,7 +361,7 @@ run_sql_and_return_html(cnx,"""
 SELECT
   `Region`, `Income Group`, count(*) as "Number of Countries"
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 GROUP BY
   `Region`, `Income Group`
 ORDER BY
@@ -396,7 +396,7 @@ SELECT
   COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END) AS "No income group",
   COUNT(*) AS "Total Countries"
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 GROUP BY
   `Region`
 ORDER BY
@@ -424,7 +424,7 @@ SELECT
   count(*) AS "Low Income Countries", 
   `Region`, `Income Group`
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 WHERE
   `Income Group` = 'Low income'
 GROUP BY
@@ -451,7 +451,7 @@ run_sql_and_return_html(cnx,"""
 SELECT
   `Country Code`, `Short Name`, `Region`, `Income Group`
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 WHERE
   `Region` = (SELECT `Region` FROM wdi_country WHERE `Country Code` = 'MHL')
   AND `Income Group` = (SELECT `Income Group` FROM wdi_country WHERE `Country Code` = 'MHL')
@@ -485,7 +485,7 @@ run_sql_and_return_html(cnx,"""
 SELECT
   `Region`, `Income Group`
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 GROUP BY
   `Region`, `Income Group`
 HAVING
@@ -517,7 +517,7 @@ WITH country_count AS (
   SELECT
     `Region`, `Income Group`, count(*) AS "Country Count"
   FROM
-    wdi_country
+      sp25_yazbeckn_user.wdi_country
   GROUP BY
     `Region`, `Income Group`
 ),
@@ -525,7 +525,7 @@ region_count AS (
   SELECT
     `Region`, count(*) AS "Total Countries in Region"
   FROM
-    world_bank_data.wdi_country
+    sp25_yazbeckn_user.wdi_country
   GROUP BY
     `Region`
 )
@@ -563,7 +563,7 @@ SELECT
   COUNT(CASE WHEN `Income Group` = 'Low income' THEN 1 END) / COUNT(*) * 100 AS "Low income %",
   COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END) / COUNT(*) * 100 AS "No income group %"
 FROM
-  wdi_country
+  sp25_yazbeckn_user.wdi_country
 GROUP BY
   `Region`
 ORDER BY
@@ -586,7 +586,7 @@ WITH country_count AS (
   SELECT
     `Income Group`, count(*) AS "Country Count"
   FROM
-    wdi_country
+    sp25_yazbeckn_user.wdi_country
   GROUP BY
     `Income Group`
 ),
@@ -594,7 +594,7 @@ total_count AS (
   SELECT
     count(*) AS "Total Countries"
   FROM
-    wdi_country
+    sp25_yazbeckn_user.wdi_country
 )
 SELECT
   c.`Income Group`,
