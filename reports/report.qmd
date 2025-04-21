@@ -389,18 +389,19 @@ ORDER BY
 run_sql_and_return_html(cnx,"""
 SELECT
   `Region`,
-  COUNT(CASE WHEN `Income Group` = 'High income' THEN 1 END) AS "High income",
-  COUNT(CASE WHEN `Income Group` = 'Upper middle income' THEN 1 END) AS "Upper middle income",
-  COUNT(CASE WHEN `Income Group` = 'Lower middle income' THEN 1 END) AS "Lower middle income",
-  COUNT(CASE WHEN `Income Group` = 'Low income' THEN 1 END) AS "Low income",
-  COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END) AS "No income group",
-  COUNT(*) AS "Total Countries"
+  ROUND(COUNT(CASE WHEN `Income Group` = 'High income' THEN 1 END), 1) AS "High income",
+  ROUND(COUNT(CASE WHEN `Income Group` = 'Upper middle income' THEN 1 END), 1) AS "Upper middle income",
+  ROUND(COUNT(CASE WHEN `Income Group` = 'Lower middle income' THEN 1 END), 1) AS "Lower middle income",
+  ROUND(COUNT(CASE WHEN `Income Group` = 'Low income' THEN 1 END), 1) AS "Low income",
+  ROUND(COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END), 1) AS "No income group",
+  ROUND(COUNT(*), 1) AS "Total Countries"
 FROM
   sp25_yazbeckn_user.wdi_country
 GROUP BY
   `Region`
 ORDER BY
-  `Region`
+  `Region`;
+
 """)
 
 ```
@@ -421,8 +422,9 @@ ORDER BY
 
 run_sql_and_return_html(cnx,"""
 SELECT
-  count(*) AS "Low Income Countries", 
-  `Region`, `Income Group`
+  COUNT(*) AS "Low Income Countries",
+  `Region`,
+  'Low income' AS "Income Group"
 FROM
   sp25_yazbeckn_user.wdi_country
 WHERE
@@ -430,8 +432,9 @@ WHERE
 GROUP BY
   `Region`
 ORDER BY
-  "Low Income Countries" DESC
-LIMIT 1
+  `Low Income Countries` DESC
+LIMIT 1;
+
 """)
 
 ```
@@ -481,15 +484,21 @@ ORDER BY
 ## in Task 14.  (FYI - I get 6 rows in my final table.)
 ## (skills: select, where, subqueries, joins)
 
-run_sql_and_return_html(cnx,"""
+run_sql_and_return_df(cnx,"""
 SELECT
-  `Region`, `Income Group`
+  r.Region,
+  i.`Income Group`
 FROM
-  sp25_yazbeckn_user.wdi_country
-GROUP BY
-  `Region`, `Income Group`
-HAVING
-  COUNT(*) = 0
+  (SELECT DISTINCT `Region` FROM sp25_yazbeckn_user.wdi_country) r
+CROSS JOIN
+  (SELECT DISTINCT `Income Group` FROM sp25_yazbeckn_user.wdi_country) i
+WHERE
+  (r.Region, i.`Income Group`) NOT IN (
+    SELECT DISTINCT `Region`, `Income Group`
+    FROM sp25_yazbeckn_user.wdi_country
+  )
+ORDER BY
+  r.Region, i.`Income Group`;
 """)
 
 ```
