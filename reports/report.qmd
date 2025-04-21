@@ -389,12 +389,12 @@ ORDER BY
 run_sql_and_return_html(cnx,"""
 SELECT
   `Region`,
-  ROUND(COUNT(CASE WHEN `Income Group` = 'High income' THEN 1 END), 1) AS "High income",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Upper middle income' THEN 1 END), 1) AS "Upper middle income",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Lower middle income' THEN 1 END), 1) AS "Lower middle income",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Low income' THEN 1 END), 1) AS "Low income",
-  ROUND(COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END), 1) AS "No income group",
-  ROUND(COUNT(*), 1) AS "Total Countries"
+  SUM(CASE WHEN `Income Group` = 'High income' THEN 1 ELSE 0 END) AS "High income",
+  SUM(CASE WHEN `Income Group` = 'Upper middle income' THEN 1 ELSE 0 END) AS "Upper middle income",
+  SUM(CASE WHEN `Income Group` = 'Lower middle income' THEN 1 ELSE 0 END) AS "Lower middle income",
+  SUM(CASE WHEN `Income Group` = 'Low income' THEN 1 ELSE 0 END) AS "Low income",
+  SUM(CASE WHEN `Income Group` IS NULL THEN 1 ELSE 0 END) AS "No income group",
+  COUNT(*) AS "Total Countries"
 FROM
   sp25_yazbeckn_user.wdi_country
 GROUP BY
@@ -484,21 +484,24 @@ ORDER BY
 ## in Task 14.  (FYI - I get 6 rows in my final table.)
 ## (skills: select, where, subqueries, joins)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 SELECT
   r.Region,
-  i.`Income Group`
+  i.`Income Group`,
+  'MISSING' AS Status
 FROM
-  (SELECT DISTINCT `Region` FROM sp25_yazbeckn_user.wdi_country) r
+  (SELECT DISTINCT `Region` FROM sp25_yazbeckn_user.wdi_country WHERE `Region` IS NOT NULL) r
 CROSS JOIN
-  (SELECT DISTINCT `Income Group` FROM sp25_yazbeckn_user.wdi_country) i
-WHERE
-  (r.Region, i.`Income Group`) NOT IN (
+  (SELECT DISTINCT `Income Group` FROM sp25_yazbeckn_user.wdi_country WHERE `Income Group` IS NOT NULL) i
+LEFT JOIN (
     SELECT DISTINCT `Region`, `Income Group`
     FROM sp25_yazbeckn_user.wdi_country
-  )
-ORDER BY
-  r.Region, i.`Income Group`;
+    WHERE `Region` IS NOT NULL AND `Income Group` IS NOT NULL
+) existing
+ON r.Region = existing.Region AND i.`Income Group` = existing.`Income Group`
+WHERE existing.Region IS NULL
+ORDER BY r.Region, i.`Income Group`;
+
 """)
 
 ```
@@ -585,24 +588,23 @@ ORDER BY
 ## Task 20
 
 ```{python}
-## SLAM DUNK TIME!  Using the resulting table CTEs from Task 19,
-## print table similar to the table in Task 15, with Income group in the
-## columns, Region in the rows and Percent of total in each cell of the table.
+
 
 run_sql_and_return_html(cnx,"""
 SELECT
-  `Region`,
-  ROUND(COUNT(CASE WHEN `Income Group` = 'High income' THEN 1 END) / COUNT(*) * 100, 1) AS "High income %",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Upper middle income' THEN 1 END) / COUNT(*) * 100, 1) AS "Upper middle income %",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Lower middle income' THEN 1 END) / COUNT(*) * 100, 1) AS "Lower middle income %",
-  ROUND(COUNT(CASE WHEN `Income Group` = 'Low income' THEN 1 END) / COUNT(*) * 100, 1) AS "Low income %",
-  ROUND(COUNT(CASE WHEN `Income Group` IS NULL THEN 1 END) / COUNT(*) * 100, 1) AS "No income group %"
+  Region,
+  ROUND(SUM(CASE WHEN "Income Group" = 'High income' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1),
+  ROUND(SUM(CASE WHEN "Income Group" = 'Upper middle income' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1),
+  ROUND(SUM(CASE WHEN "Income Group" = 'Lower middle income' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1),
+  ROUND(SUM(CASE WHEN "Income Group" = 'Low income' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1),
+  ROUND(SUM(CASE WHEN "Income Group" IS NULL THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1),
+  ROUND(COUNT(*) * 100.0 / COUNT(*), 1)
 FROM
   sp25_yazbeckn_user.wdi_country
 GROUP BY
-  `Region`
+  Region
 ORDER BY
-  `Region`
+  Region;
 
 """)
 
